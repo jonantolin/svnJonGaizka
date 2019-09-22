@@ -14,54 +14,57 @@
 }
 
 .boton-buscar{
-	margin-top: 1.7em;
-	margin-bottom: 2em;
+	margin-top: .7em;
+	margin-bottom: 1em;
 
 }
 
 
 </style>
-		
-				<div class="d-inline py-2 mr-2">
-					<form action="frontoffice/videos" class="d-inline">
-							<input class="form-control-inline" type="search" name="nombreBuscar" placeholder="Buscar por Nombre" required>
-							<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_NOMBRE_CON_LIKE_USUARIO%>">
+				<div class="border border-primary my-1 p-1 d-inline-block rounded shadow-sm">
+					<h6>Buscar vídeos</h6>
+					<div class="d-inline mr-2">
+						<form action="frontoffice/videos" class="d-inline">
+								<input class="form-control-inline" type="search" name="nombreBuscar" placeholder="Buscar por Nombre" required>
+								<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_NOMBRE_CON_LIKE_USUARIO%>">
+								<button type="submit" class="btn btn-primary btn-sm boton-buscar"><i class="fas fa-search"></i></button>
+						</form>
+					</div>	
+						
+					<div class="d-inline mr-2">
+						<form action="frontoffice/videos" class="d-inline">
+							<input class="form-control-inline" type="search" name="usuarioBuscar" placeholder="Buscar por Usuario" required>
+							<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_USUARIO_CON_LIKE_USUARIO%>">
 							<button type="submit" class="btn btn-primary btn-sm boton-buscar"><i class="fas fa-search"></i></button>
-					</form>
-				</div>	
-					
-				<div class="d-inline py-2 mr-2">
-					<form action="frontoffice/videos" class="d-inline">
-						<input class="form-control-inline" type="search" name="usuarioBuscar" placeholder="Buscar por Usuario" required>
-						<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_USUARIO_CON_LIKE_USUARIO%>">
-						<button type="submit" class="btn btn-primary btn-sm boton-buscar"><i class="fas fa-search"></i></button>
-					</form>
+						</form>
+					</div>
 				</div>
-
-				<%@include file="../includes/mensaje.jsp"%>
+				
 				
 				<c:if test="${busquedaVideo != null }">
 					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaVideo}</span>"</h3>
-					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 
 				</c:if>
 				
 				<c:if test="${busquedaUsuario != null }">
 					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
-					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 
 				</c:if>
 				
 				<c:if test="${nombreUsuario != null }">
 					<h3 class="text-primary">Vídeos de <span class="text-success"><i class="fas fa-user mr-1"></i>${nombreUsuario}</span></h3>
-					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 				
 				</c:if>
 				
 				<c:if test="${nombreCategoria != null }">
 					<h3 class="text-primary">Vídeos de <span class="text-warning"><i class="fas fa-tag mr-1"></i>${nombreCategoria}</span></h3>
-					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 				</c:if>
+				
+				<%@include file="../includes/mensaje.jsp"%>
 				
 				<ul class="list-group">
 				
