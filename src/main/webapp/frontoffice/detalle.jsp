@@ -1,5 +1,5 @@
 
-<%@page import="com.ipartek.formacion.controller.publica.VideoController"%>
+<%@page import="com.ipartek.formacion.controller.frontoffice.VideoController"%>
 
 <%@include file="../../includes/header.jsp"%>
 <%@include file="../../includes/navbar.jsp"%>
@@ -27,11 +27,11 @@
 				
 				
 				<c:if test="${video.like.idUsuario != -1 }">
-					<a href="frontoffice/videos?id=${video.id }&op=59" class="btn btn-success peque mr-2 float-right"><i class="far fa-thumbs-up"></i></a>
+					<a href="frontoffice/videos?id=${video.id }&op=<%=VideoController.OP_RESTAR_LIKE %>" class="btn btn-success peque mr-2 float-right"><i class="far fa-thumbs-up"></i></a>
 				</c:if>	
 				
 				<c:if test="${video.like.idUsuario == -1 }">
-					<a href="frontoffice/videos?id=${video.id }&op=55" class="btn btn-outline-success peque mr-2 float-right "><i class="far fa-thumbs-up"></i></a>
+					<a href="frontoffice/videos?id=${video.id }&op=<%=VideoController.OP_SUMAR_LIKE %>" class="btn btn-outline-success peque mr-2 float-right "><i class="far fa-thumbs-up"></i></a>
 				</c:if>		
 				
 				<p class="text-info"><i class="fas fa-user mr-1"></i> ${video.usuario.nombre} </p>

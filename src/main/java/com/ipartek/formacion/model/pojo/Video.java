@@ -20,6 +20,10 @@ public class Video {
 	private Categoria categoria;
 
 	private int likes;
+	
+	// TODO ArrayList<Like> ??? quiza mas correcto
+	// De momento recogera el like del usuario logueado si lo hubiera
+	private Like like;
 
 	public Video() {
 		super();
@@ -29,6 +33,7 @@ public class Video {
 		this.usuario = new Usuario();
 		this.categoria = new Categoria();
 		this.likes = 0;
+		this.like = new Like();
 	}
 
 	public Usuario getUsuario() {
@@ -79,10 +84,19 @@ public class Video {
 		this.likes = likes;
 	}
 
+	public Like getLike() {
+		return like;
+	}
+
+	public void setLike(Like like) {
+		this.like = like;
+	}
+
 	@Override
 	public String toString() {
 		return "Video [id=" + id + ", nombre=" + nombre + ", codigo=" + codigo + ", usuario=" + usuario + ", categoria="
-				+ categoria + "]";
+				+ categoria + ", likes=" + likes + ", like=" + like + "]";
 	}
 
+	
 }

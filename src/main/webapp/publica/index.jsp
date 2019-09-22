@@ -1,68 +1,70 @@
 <%@include file="/includes/header.jsp"%>
 <%@include file="/includes/navbar.jsp"%>
-<%@include file="../includes/mensaje.jsp"%>
+
 
 <%@page import="com.ipartek.formacion.controller.publica.VideoController"%>
 
 <style>
 
+.peque{
 
-.mt-2{
-
-
-width:30%;
-
-
+	font-size: 75%;
 
 }
 
-form{
-
-display:inline;
-margin-top:10%;
-margin-left:10%;
-
+.boton-buscar{
+	margin-top: 1.7em;
+	margin-bottom: 2em;
 
 }
-
-.bg-dark{
-
-margin-bottom:1%;
-
-
-}
-
-.list-group{
-
-margin-top:3%;
-
-}
-
-
 
 
 </style>
 		
-	<div class="row">
-		
-		
-			<div class="col">
+
 			
-			
-				<form action="publica/videos" class="mt-2">
-						<input class="form-control-inline" type="search" name="nombreBuscar" placeholder="Buscar por Nombre" required>
-						<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR%>">
-						<button type="submit" class="btn btn-primary">Filtrar Nombre <i class="fas fa-search"></i></button>
-				</form>
+				<div class="d-inline py-2 mr-2">
+					<form action="publica/videos" class="d-inline">
+							<input class="form-control-inline" type="search" name="nombreBuscar" placeholder="Buscar por Nombre" required>
+							<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_NOMBRE%>">
+							<button type="submit" class="btn btn-primary btn-sm boton-buscar"><i class="fas fa-search"></i></button>
+					</form>
+				</div>	
 					
-					
+				<div class="d-inline py-2 mr-2">
+					<form action="publica/videos" class="d-inline">
+						<input class="form-control-inline" type="search" name="usuarioBuscar" placeholder="Buscar por Usuario" required>
+						<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_USUARIO%>">
+						<button type="submit" class="btn btn-primary btn-sm boton-buscar"><i class="fas fa-search"></i></button>
+					</form>
+				</div>
 				
-				<form action="publica/videos" class="mt-2">
-					<input class="form-control-inline" type="search" name="usuarioBuscar" placeholder="Buscar por Usuario" required>
-					<input type="hidden" name="op" value="<%=VideoController.OP_BUSCAR_POR_USUARIO%>">
-					<button type="submit" class="btn btn-primary">Filtrar Usuario <i class="fas fa-search"></i></button>
-				</form><br>
 				
+				<%@include file="../includes/mensaje.jsp"%>
+				
+				<c:if test="${busquedaVideo != null }">
+					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaVideo}</span>"</h3>
+					<a href="publica/videos" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+
+				</c:if>
+				
+				<c:if test="${busquedaUsuario != null }">
+					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
+					<a href="publica/videos" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+
+				</c:if>
+				
+
+				<c:if test="${nombreUsuario != null }">
+					<h3 class="text-primary">Vídeos de <span class="text-success"><i class="fas fa-user mr-1"></i>${nombreUsuario}</span></h3>
+					<a href="publica/videos" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+				
+				</c:if>
+				
+				<c:if test="${nombreCategoria != null }">
+					<h3 class="text-primary">Vídeos de <span class="text-warning"><i class="fas fa-tag mr-1"></i>${nombreCategoria}</span></h3>
+					<a href="publica/videos" class="btn btn-outline-primary btn-sm">Volver a Inicio</a>
+				</c:if>
 				
 				<ul class="list-group">
 				
@@ -72,20 +74,34 @@ margin-top:3%;
 	  				  	
 		  				  	<div class="row ml-1">
 		  				  			<div class="col-12 col-md-2">
-						  		
-						  				<img class="float-left mr-3" src="https://img.youtube.com/vi/${v.codigo}/default.jpg" alt="Imagen destacda del video ${v.nombre}"/>
-						  			
+						  				<div class="d-flex justify-content-center">
+						  					
+							  				<img src="https://img.youtube.com/vi/${v.codigo}/default.jpg" alt="Imagen destacda del video ${v.nombre}"/>
+							  			</div>
+							  			<div class="d-flex justify-content-center mt-1">
+							  			
+								  			<span class="mx-2 text-danger text-center d-block"><i class="fas fa-heart mr-1"></i>${v.likes} </span>
+									  		
+									  		<c:if test="${v.like.idUsuario != -1 }">
+									  		
+									  			<a href="frontoffice/videos?id=${v.id }&op=59" class="btn btn-success peque mx-1 "><i class="far fa-thumbs-up"></i></a>
+									  		
+									  		</c:if>	
+									  		
+									  		<c:if test="${v.like.idUsuario == -1 }">
+									  		
+									  			<a href="frontoffice/videos?id=${v.id }&op=55" class="btn btn-outline-success peque mx-1 "><i class="far fa-thumbs-up"></i></a>
+									  		
+									  		</c:if>
+									  		
+								  			
+							  			</div>
 						  			</div>
 						  			<div class="col-12 col-md-9">
 						  			
 							  			<a href="publica/videos?id=${v.id }&op=<%=VideoController.OP_DETALLE  %>"><p class="h3">${v.nombre}</p></a>
-							  			<p><i class="fas fa-user mr-1"></i>${v.usuario.nombre}</p>  			
-							  			<p><i class="fas fa-tag mr-1"></i>${v.categoria.nombre}</p>
-							  			
-							  			
-							  				<a href="frontoffice/videos?id=${v.id }&op=55">
-							  					<p class="text-danger"><i class="fas fa-heart mr-1"></i>${v.likes}</p>
-							  				</a>
+							  			<a href="publica/videos?idUsuario=${v.usuario.id }&nombreUsuario=${v.usuario.nombre}&op=<%=VideoController.OP_LISTAR_POR_USUARIO %>" class="d-inline mx-2 text-success"><i class="fas fa-user mr-1"></i>${v.usuario.nombre}</a>  			
+							  			<a href="publica/videos?idCategoria=${v.categoria.id }&nombreCategoria=${v.categoria.nombre}&op=<%=VideoController.OP_LISTAR_POR_CATEGORIA %>" class="d-inline mx-2 text-warning"><i class="fas fa-tag mr-1"></i>${v.categoria.nombre}</a>
 
 						  			</div>
 						  		</div>
@@ -93,9 +109,7 @@ margin-top:3%;
 					  	</li>					
 					</c:forEach>
 				</ul>		
-			</div>
-	
-	</div>
+
 
     
     	    	

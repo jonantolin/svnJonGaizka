@@ -53,7 +53,7 @@ public class FrontofficeController extends HttpServlet {
 
 		request.setAttribute("numeroVideos", videos.size());
 
-		request.getRequestDispatcher("index.jsp").forward(request, response);
+		request.getRequestDispatcher("mipanel.jsp").forward(request, response);
 
 	}
 

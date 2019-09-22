@@ -49,7 +49,7 @@ margin-top:3%;
 					  			
 					  			<p class="h3">${v.nombre}</p>
 					  		</a>
-					  		<a href="backoffice/usuarios?op=<%=UsuarioController.OP_DETALLE%>&id=${v.usuario.id }">
+					  		<a href="backoffice/usuario?op=<%=UsuarioController.OP_DETALLE%>&id=${v.usuario.id }">
 					  			<p><i class="fas fa-user"></i> ${v.usuario.nombre }</p>
 					  		</a>
 					  		

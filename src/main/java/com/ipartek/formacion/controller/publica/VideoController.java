@@ -1,6 +1,7 @@
 package com.ipartek.formacion.controller.publica;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
+import com.ipartek.formacion.controller.pojo.Alert;
 import com.ipartek.formacion.model.dao.VideoDAO;
 import com.ipartek.formacion.model.pojo.Video;
 
@@ -27,9 +29,11 @@ public class VideoController extends HttpServlet {
 	public static String view = VIEW_INDEX;
 
 	public static final String OP_LISTAR = "0";
+	public static final String OP_LISTAR_POR_USUARIO = "75";
+	public static final String OP_LISTAR_POR_CATEGORIA = "78";
 
 	public static final String OP_DETALLE = "13";
-	public static final String OP_BUSCAR = "8";
+	public static final String OP_BUSCAR_POR_NOMBRE = "8";
 
 	public static final String OP_BUSCAR_POR_USUARIO = "41";
 
@@ -44,19 +48,13 @@ public class VideoController extends HttpServlet {
 		validator = Validation.buildDefaultValidatorFactory().getValidator();
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
+
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		doProcess(request, response);
 	}
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
+
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		doProcess(request, response);
@@ -75,13 +73,21 @@ public class VideoController extends HttpServlet {
 			detalle(request, response);
 			break;
 
-		case OP_BUSCAR:
+		case OP_BUSCAR_POR_NOMBRE:
 			listarPorNombre(request, response);
 			break;
 
 		case OP_BUSCAR_POR_USUARIO:
-			listarPorUsuario(request, response);
+			listarPorNombreUsuario(request, response);
 			break;
+			
+		case OP_LISTAR_POR_USUARIO:
+			listarPorIdUsuario(request, response);
+			break;	
+			
+		case OP_LISTAR_POR_CATEGORIA:
+			listarPorIdCategoria(request, response);
+			break;	
 
 		default:
 			listar(request, response);
@@ -91,17 +97,69 @@ public class VideoController extends HttpServlet {
 		request.getRequestDispatcher(view).forward(request, response);
 	}
 
-	private void listarPorNombre(HttpServletRequest request, HttpServletResponse response) {
+	private void listarPorIdUsuario(HttpServletRequest request, HttpServletResponse response) {
 
-		request.setAttribute("videos", videoDAO.getAllByName(request.getParameter("nombreBuscar")));
+		String sIdUsuario = request.getParameter("idUsuario");
+		int idUsuario = Integer.parseInt(sIdUsuario);
+		
+		request.setAttribute("nombreUsuario", request.getParameter("nombreUsuario"));
+		
+		request.setAttribute("videos", videoDAO.getAllByUserId(idUsuario));
+		
+		view = VIEW_INDEX;
+		
+	}
+	
+	private void listarPorIdCategoria(HttpServletRequest request, HttpServletResponse response) {
+
+		String sIdCategoria = request.getParameter("idCategoria");
+		int idCategoria = Integer.parseInt(sIdCategoria);
+		
+		request.setAttribute("nombreCategoria", request.getParameter("nombreCategoria"));
+		
+		request.setAttribute("videos", videoDAO.getAllByCatId(idCategoria));
+		
+		view = VIEW_INDEX;
+		
+	}
+
+
+	private void listarPorNombre(HttpServletRequest request, HttpServletResponse response) {
+		
+		String nombre = request.getParameter("nombreBuscar");
+		
+		request.setAttribute("busquedaVideo", nombre);
+		
+		ArrayList<Video> lista = videoDAO.getAllByName(request.getParameter("nombreBuscar"));
+
+		if(lista.size() == 0) {
+			
+			request.setAttribute("mensaje", new Alert("warning", "No hay resultados para tu búsqueda. <a class=\"btn btn-primary btn-sm\" href=\"publica/videos\">Volver a Inicio</a>"));
+		}else {
+			
+			request.setAttribute("videos", lista);
+		}
 
 		view = VIEW_INDEX;
 
 	}
 
-	private void listarPorUsuario(HttpServletRequest request, HttpServletResponse response) {
-
-		request.setAttribute("videos", videoDAO.getAllByUserName(request.getParameter("usuarioBuscar")));
+	private void listarPorNombreUsuario(HttpServletRequest request, HttpServletResponse response) {
+		
+		String nombre = request.getParameter("usuarioBuscar");
+		
+		request.setAttribute("busquedaUsuario", nombre);
+		
+		ArrayList<Video> lista = videoDAO.getAllByUserName(request.getParameter("usuarioBuscar"));
+		
+		if(lista.size() == 0) {
+			
+			request.setAttribute("mensaje", new Alert("warning", "No hay resultados para tu búsqueda. <a class=\"btn btn-primary btn-sm\" href=\"publica/videos\">Volver a Inicio</a>"));
+		}else {
+			
+			request.setAttribute("videos", lista);
+		}
+		
 
 		view = VIEW_INDEX;
 

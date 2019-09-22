@@ -45,11 +45,11 @@ color:#17a2b8!important;
 		  		<a href="backoffice/usuario?op=<%=UsuarioController.OP_DETALLE%>&id=${u.id}">${u.id} ${u.nombre}</a>
 		  		<span class="mx-2 h5 text-danger">
 		  			<c:if test="${u.numVideos != 0 }">
-		  				<a class="text-danger" href="backoffice/videos?id=${u.id }&op=<%=VideoController.OP_LISTAR_POR_USUARIO %>"><i class="fab fa-youtube text-danger"></i> NºVideos: ${u.numVideos}</a>
+		  				<a class="text-danger" href="backoffice/videos?id=${u.id }&op=<%=VideoController.OP_LISTAR_POR_USUARIO %>"><i class="fab fa-youtube text-danger"></i> ${u.numVideos} vídeos</a>
 		  			</c:if>
 		  			
 		  			<c:if test="${u.numVideos == 0 }">
-		  				<i class="fab fa-youtube"></i> NºVideos ${u.numVideos}
+		  				<i class="fab fa-youtube"></i> Sin vídeos
 		  			</c:if>
 		  		</span>
 

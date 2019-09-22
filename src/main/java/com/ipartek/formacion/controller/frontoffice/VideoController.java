@@ -31,23 +31,43 @@ public class VideoController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final String VIEW_INDEX = "youtube/index.jsp";
+	public static final String VIEW_MIS_VIDEOS = "youtube/index.jsp";
+	public static final String VIEW_MI_PANEL = "youtube/mipanel.jsp";
 	public static final String VIEW_FORM = "youtube/formulario.jsp";
+	public static final String VIEW_DETALLE_PUBLICO = "detalle.jsp";
+	
+	public static final String VIEW_INDEX = "index.jsp";
+	
 	public static String view = VIEW_INDEX;
 
-	// TODO mostrar solo los videos
+	
 	public static final String OP_LISTAR = "0";
 	public static final String OP_GUARDAR = "23";
 	public static final String OP_NUEVO = "4";
 	public static final String OP_ELIMINAR = "hfd3";
 	public static final String OP_DETALLE = "13";
 	public static final String OP_SUMAR_LIKE = "55";
+	public static final String OP_RESTAR_LIKE = "59";
+	
+	
+	// Sacara todos los videos visibles incluyendo el like dado del usuario
+	public static final String OP_LISTAR_TODOS_CON_LIKE_USUARIO = "98";
+	public static final String OP_DETALLE_CON_LIKE_USUARIO = "91";
+	public static final String OP_LISTAR_POR_USUARIO_CON_LIKE_USUARIO = "75";
+	public static final String OP_LISTAR_POR_CATEGORIA_CON_LIKE_USUARIO = "66";
+	
+	public static final String OP_BUSCAR_POR_NOMBRE_CON_LIKE_USUARIO = "8";
+	
 
-	// TODO crear videos controlando que en el formulario de pone ese usuario
+	public static final String OP_BUSCAR_POR_USUARIO_CON_LIKE_USUARIO = "41";
+
+	
 
 	private static VideoDAO videoDAO;
 	private static UsuarioDAO usuarioDAO;
 	private static CategoriaDAO categoriaDAO;
+	
+	private static Usuario usuarioLogueado = null;
 
 	private Validator validator;
 
@@ -80,6 +100,9 @@ public class VideoController extends HttpServlet {
 
 	protected void doProcess(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		
+		HttpSession session = request.getSession();
+		usuarioLogueado = (Usuario) session.getAttribute("usuario");
 
 		String op = request.getParameter("op");
 		if (op == null) {
@@ -89,6 +112,10 @@ public class VideoController extends HttpServlet {
 		switch (op) {
 		case OP_DETALLE:
 			detalle(request, response);
+			break;
+		
+		case OP_DETALLE_CON_LIKE_USUARIO:
+			detalleConLikesUsuario(request, response);
 			break;
 
 		case OP_GUARDAR:
@@ -106,6 +133,30 @@ public class VideoController extends HttpServlet {
 		case OP_SUMAR_LIKE:
 			sumarLike(request, response);
 			break;
+			
+		case OP_RESTAR_LIKE:
+			restarLike(request, response);
+			break;	
+			
+		case OP_LISTAR_TODOS_CON_LIKE_USUARIO:
+			listarTodosConLikeUsuario(request, response);
+			break;
+			
+		case OP_LISTAR_POR_USUARIO_CON_LIKE_USUARIO:
+			listarPorIdUsuarioConLikeUsuario(request, response);
+			break;
+			
+		case OP_LISTAR_POR_CATEGORIA_CON_LIKE_USUARIO:
+			listarPorIdCategoriaConLikeUsuario(request, response);
+			break;
+			
+		case OP_BUSCAR_POR_NOMBRE_CON_LIKE_USUARIO:
+			listarPorNombreConLikeUsuario(request, response);
+			break;	
+		
+		case OP_BUSCAR_POR_USUARIO_CON_LIKE_USUARIO:
+			listarPorUsuarioConLikeUsuario(request, response);
+			break;
 
 		default:
 			listar(request, response);
@@ -114,11 +165,59 @@ public class VideoController extends HttpServlet {
 
 		request.getRequestDispatcher(view).forward(request, response);
 	}
+	
+
+	private void listarPorUsuarioConLikeUsuario(HttpServletRequest request, HttpServletResponse response) {
+		
+		
+		String nombre = request.getParameter("usuarioBuscar");
+		
+		request.setAttribute("busquedaUsuario", nombre);
+		
+		ArrayList<Video> lista = videoDAO.getAllByUserNameWithLikeUsuario(usuarioLogueado.getId(), nombre);
+
+		if(lista.size() == 0) {
+			
+			request.setAttribute("mensaje", new Alert("warning", "No hay resultados para tu búsqueda. <a class=\"btn btn-primary btn-sm\" href=\"frontoffice/videos?op=98\">Volver a Inicio</a>"));
+		}else {
+			
+			request.setAttribute("videos", lista);
+		}
+		
+	}
+
+	private void listarPorNombreConLikeUsuario(HttpServletRequest request, HttpServletResponse response) {
+		
+		String nombre = request.getParameter("nombreBuscar");
+		
+		request.setAttribute("busquedaVideo", nombre);
+		
+		ArrayList<Video> lista = videoDAO.getAllByNameWithLikeUsuario(usuarioLogueado.getId(), nombre);
+
+		if(lista.size() == 0) {
+			
+			request.setAttribute("mensaje", new Alert("warning", "No hay resultados para tu búsqueda. <a class=\"btn btn-primary btn-sm\" href=\"frontoffice/videos?op=98\">Volver a Inicio</a>"));
+		}else {
+			
+			request.setAttribute("videos", lista);
+		}
+		
+		
+	}
+
+	private void listarTodosConLikeUsuario(HttpServletRequest request, HttpServletResponse response) {
+		
+
+		int idUsuario = usuarioLogueado.getId();
+		
+		request.setAttribute("videos", videoDAO.getAllWithLikeUsuario(idUsuario));
+		
+		view = VIEW_INDEX;
+		
+	}
 
 	private void sumarLike(HttpServletRequest request, HttpServletResponse response) {
 
-		HttpSession session = request.getSession();
-		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuario");
 
 		int idUsuario = usuarioLogueado.getId();
 
@@ -128,7 +227,22 @@ public class VideoController extends HttpServlet {
 
 		videoDAO.sumarLike(idUsuario, idVideo);
 
-		view = "/publica/videos";
+		listarTodosConLikeUsuario(request, response);
+
+	}
+	
+	private void restarLike(HttpServletRequest request, HttpServletResponse response) {
+
+
+		int idUsuario = usuarioLogueado.getId();
+
+		String sIdVideo = request.getParameter("id");
+
+		int idVideo = Integer.parseInt(sIdVideo);
+
+		videoDAO.restarLike(idUsuario, idVideo);
+
+		listarTodosConLikeUsuario(request, response);
 
 	}
 
@@ -143,9 +257,6 @@ public class VideoController extends HttpServlet {
 	}
 
 	private void eliminar(HttpServletRequest request, HttpServletResponse response) {
-
-		HttpSession session = request.getSession();
-		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuario");
 
 		String sId = request.getParameter("id");
 		String sIdUsuario = request.getParameter("idUsuario");
@@ -171,8 +282,6 @@ public class VideoController extends HttpServlet {
 
 	private void guardar(HttpServletRequest request, HttpServletResponse response) {
 
-		HttpSession session = request.getSession();
-		Usuario usuarioLogueado = (Usuario) session.getAttribute("usuario");
 
 		String nombre = request.getParameter("nombre");
 		String codigo = request.getParameter("codigo");
@@ -240,26 +349,51 @@ public class VideoController extends HttpServlet {
 
 	private void listar(HttpServletRequest request, HttpServletResponse response) {
 
-		// listar solamente los videos del usuario logueado
 
-		HttpSession session = request.getSession();
-		Usuario usuario = (Usuario) session.getAttribute("usuario");
 
-		if (usuario != null) {
+		if (usuarioLogueado != null) {
 
-			ArrayList<Video> lista = videoDAO.getAllByUserId(usuario.getId());
+			ArrayList<Video> lista = videoDAO.getAllByUserId(usuarioLogueado.getId());
 
 			if (lista.size() == 0) {
 
 				request.setAttribute("mensaje", new Alert("warning", "Todavia no tienes videos creados."));
 			} else {
 
-				request.setAttribute("videos", videoDAO.getAllByUserId(usuario.getId()));
+				request.setAttribute("videos", videoDAO.getAllByUserId(usuarioLogueado.getId()));
 			}
 		}
 
-		view = VIEW_INDEX;
+		view = VIEW_MIS_VIDEOS;
 
+	}
+	
+	private void listarPorIdUsuarioConLikeUsuario(HttpServletRequest request, HttpServletResponse response) {
+
+		int idUsuarioLogueado = usuarioLogueado.getId();
+		
+		String sIdUsuario = request.getParameter("idUsuario");
+		int idUsuario = Integer.parseInt(sIdUsuario);
+		
+		request.setAttribute("nombreUsuario", request.getParameter("nombreUsuario"));
+		
+		request.setAttribute("videos", videoDAO.getAllByUserIdWithLikeUsuario(idUsuarioLogueado, idUsuario));
+		
+		view = VIEW_INDEX;
+		
+	}
+	
+	private void listarPorIdCategoriaConLikeUsuario(HttpServletRequest request, HttpServletResponse response) {
+
+		String sIdCategoria = request.getParameter("idCategoria");
+		int idCategoria = Integer.parseInt(sIdCategoria);
+		
+		request.setAttribute("nombreCategoria", request.getParameter("nombreCategoria"));
+		
+		request.setAttribute("videos", videoDAO.getAllByCatIdWithLikeUsuario(usuarioLogueado.getId(), idCategoria));
+		
+		view = VIEW_INDEX;
+		
 	}
 
 	private void detalle(HttpServletRequest request, HttpServletResponse response) {
@@ -274,13 +408,18 @@ public class VideoController extends HttpServlet {
 
 		view = VIEW_FORM;
 
-		HttpSession session = request.getSession();
-		HashMap<Integer, Video> videosVistos = (HashMap<Integer, Video>) session.getAttribute("videosVistos");
-		if (videosVistos == null) {
-			videosVistos = new HashMap<Integer, Video>();
-		}
-		videosVistos.put(v.getId(), v);
-		session.setAttribute("videosVistos", videosVistos);
+	}
+	
+	private void detalleConLikesUsuario(HttpServletRequest request, HttpServletResponse response) {
+
+		
+		String sVideoId = request.getParameter("id");
+		int videoId = Integer.parseInt(sVideoId);
+
+		Video v = videoDAO.getByIdWithLikeUsuario(usuarioLogueado.getId(), videoId);
+		request.setAttribute("video", v);
+
+		view = VIEW_DETALLE_PUBLICO;
 
 	}
 

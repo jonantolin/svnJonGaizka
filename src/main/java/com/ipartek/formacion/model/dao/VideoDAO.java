@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import com.ipartek.formacion.model.ConnectionManager;
 import com.ipartek.formacion.model.pojo.Categoria;
+import com.ipartek.formacion.model.pojo.Like;
 import com.ipartek.formacion.model.pojo.Usuario;
 import com.ipartek.formacion.model.pojo.Video;
 import com.mysql.jdbc.Statement;
@@ -16,6 +17,8 @@ public class VideoDAO {
 
 	private static VideoDAO INSTANCE = null;
 
+	
+	// SENTENCIAS PARTE PUBLICA
 	private static final String SQL_GET_ALL = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo,"
 			+ " u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion,"
 			+ " c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta" + " FROM video as v"
@@ -42,12 +45,19 @@ public class VideoDAO {
 			+ " INNER JOIN usuario as u ON v.usuario_id = u.id " + " INNER JOIN categoria as c ON v.categoria_id = c.id"
 			+ " LEFT JOIN likes as l ON v.id = l.video_id" + " WHERE v.id = ?;";
 
-	// listar por usuario
+	
 	private static final String SQL_GET_ALL_BY_USER_ID = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo,"
 			+ " u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion,"
 			+ " c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta   FROM video as v"
 			+ " INNER JOIN usuario as u ON v.usuario_id = u.id    INNER JOIN categoria as c ON v.categoria_id = c.id"
 			+ " LEFT JOIN likes as l ON v.id = l.video_id   WHERE u.fecha_eliminacion IS NULL AND u.id = ?"
+			+ " GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	private static final String SQL_GET_ALL_BY_CAT_ID = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo,"
+			+ " u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion,"
+			+ " c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta   FROM video as v"
+			+ " INNER JOIN usuario as u ON v.usuario_id = u.id    INNER JOIN categoria as c ON v.categoria_id = c.id"
+			+ " LEFT JOIN likes as l ON v.id = l.video_id   WHERE u.fecha_eliminacion IS NULL AND c.id = ?"
 			+ " GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
 
 	private static final String SQL_GET_ALL_BY_USER_NAME = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo,"
@@ -63,17 +73,93 @@ public class VideoDAO {
 			+ " INNER JOIN usuario as u ON v.usuario_id = u.id    INNER JOIN categoria as c ON v.categoria_id = c.id"
 			+ " LEFT JOIN likes as l ON v.id = l.video_id  WHERE u.fecha_eliminacion IS NULL AND v.nombre LIKE ?"
 			+ " GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	// END SENTENCIAS PARTE PUBLICA --------------------------------------------------
+	
+	
+	// SENTENCIAS USUARIO LOGUEADO ---------------------------------------------------
+	/**
+	 * Consulta para sacar todos los videos visibles y a su vez, si el usuario logueado ha dado like a cada video<br>
+	 * Si la columna de alias "usuario_like" tiene el id del usuario, le dio like, si es nula no le ha dado like
+	 */
+	private static final String SQL_GET_ALL_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	private static final String SQL_GET_BY_ID_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL AND v.id = ?" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
 
 	private static final String SQL_GET_ALL_LIKES_BY_USER = "SELECT COUNT(u.id) as num_likes"
 			+ " FROM video as v, usuario as u, likes as l"
 			+ " WHERE v.id = l.video_id AND v.usuario_id = u.id AND u.id = ?;";
+	
+	private static final String SQL_GET_ALL_BY_USER_ID_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL AND u.id = ?" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	private static final String SQL_GET_ALL_BY_CAT_ID_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL AND c.id = ?" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	private static final String SQL_GET_ALL_BY_NAME_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL AND v.nombre LIKE ?" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
+	
+	private static final String SQL_GET_ALL_BY_USER_NAME_WITH_LIKE_USUARIO = "SELECT v.id as video_id, v.nombre as video_nombre, v.codigo as codigo," + 
+			" u.id as usuario_id, u.nombre as usuario_nombre, u.fecha_creacion as usuario_creacion, u.fecha_eliminacion as usuario_eliminacion," + 
+			" c.id as categoria_id, c.nombre as categoria_nombre, COUNT(l.video_id) as megusta, IFNULL(li.usuario_id, -1) as usuario_like " + 
+			" FROM video as v" + 
+			" INNER JOIN usuario as u ON v.usuario_id = u.id  " + 
+			" INNER JOIN categoria as c ON v.categoria_id = c.id" + 
+			" LEFT JOIN likes as l ON v.id = l.video_id " + 
+			" LEFT JOIN likes as li ON v.id = li.video_id AND li.usuario_id = ?" + 
+			" WHERE u.fecha_eliminacion IS NULL AND u.nombre LIKE ?" + 
+			" GROUP BY v.id ORDER BY megusta DESC LIMIT 500;";
 
 	private static final String SQL_SUMAR_LIKE = "INSERT INTO likes (usuario_id, video_id)" + " VALUES (?, ?)";
+	
+	private static final String SQL_RESTAR_LIKE = "DELETE FROM likes WHERE usuario_id = ? AND video_id = ?";
 
 	private static final String SQL_UPDATE = "UPDATE video SET `nombre`= ?, `codigo`= ? , `usuario_id`= ? , `categoria_id`= ? WHERE `id` = ?;";
 	private static final String SQL_INSERT = "INSERT INTO video (nombre, codigo, usuario_id, categoria_id ) VALUES (?,?,?,?);";
 
-	// DELETE video de ese usuario por seguridad
+	
 	private static final String SQL_DELETE = "DELETE FROM video WHERE id = ?";
 	private static final String SQL_DELETE_BY_USER = "DELETE FROM video WHERE id = ? AND usuario_id = ? ";
 
@@ -111,6 +197,32 @@ public class VideoDAO {
 		return sumado;
 
 	}
+	
+	public boolean restarLike(int idUsuario, int idVideo) {
+		
+		boolean restado = false;
+		
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_RESTAR_LIKE)) {
+
+			pst.setInt(1, idUsuario);
+			pst.setInt(2, idVideo);
+
+			int affectedRows = pst.executeUpdate();
+			if (affectedRows == 1) {
+				restado = true;
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return restado;
+		
+		
+		
+	}
 
 	public ArrayList<Video> getAll() {
 
@@ -143,6 +255,125 @@ public class VideoDAO {
 
 			while (rs.next()) {
 				lista.add(mapper(rs));
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
+	
+	public ArrayList<Video> getAllByUserIdWithLikeUsuario(int idUsuarioLogueado, int idUsuario) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_USER_ID_WITH_LIKE_USUARIO);) {
+
+			pst.setInt(1, idUsuarioLogueado);
+			pst.setInt(2, idUsuario);
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				Video v = new Video();
+				v = mapper(rs);
+				
+				Like like = new Like();
+				int usuarioLike = rs.getInt("usuario_like");
+				
+				if(usuarioLike != -1) {
+					like.setIdUsuario(usuarioLike);
+					v.setLike(like);
+					
+				}
+				lista.add(v);
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
+	
+	public ArrayList<Video> getAllByCatIdWithLikeUsuario(int idUsuarioLogueado, int idCategoria) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_CAT_ID_WITH_LIKE_USUARIO);) {
+
+			pst.setInt(1, idUsuarioLogueado);
+			pst.setInt(2, idCategoria);
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				Video v = new Video();
+				v = mapper(rs);
+				
+				Like like = new Like();
+				int usuarioLike = rs.getInt("usuario_like");
+				
+				if(usuarioLike != -1) {
+					like.setIdUsuario(usuarioLike);
+					v.setLike(like);
+					
+				}
+				lista.add(v);
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
+	
+	public ArrayList<Video> getAllByCatId(int idCategoria) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_CAT_ID);) {
+
+			pst.setInt(1, idCategoria);
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				lista.add(mapper(rs));
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
+	
+	public ArrayList<Video> getAllWithLikeUsuario(int idUsuario) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_WITH_LIKE_USUARIO);) {
+
+			pst.setInt(1, idUsuario);
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				Video v = new Video();
+				v = mapper(rs);
+				
+				Like like = new Like();
+				int usuarioLike = rs.getInt("usuario_like");
+				
+				if(usuarioLike != -1) {
+					like.setIdUsuario(usuarioLike);
+					v.setLike(like);
+					
+				}
+				lista.add(v);
 			}
 		} catch (Exception e) {
 
@@ -193,6 +424,39 @@ public class VideoDAO {
 		}
 		return lista;
 	}
+	
+	public ArrayList<Video> getAllByNameWithLikeUsuario(int idUsuario, String nombre) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_NAME_WITH_LIKE_USUARIO);) {
+
+			pst.setInt(1, idUsuario);
+			pst.setString(2, "%" + nombre + "%");
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				Video v = new Video();
+				v = mapper(rs);
+				
+				Like like = new Like();
+				int usuarioLike = rs.getInt("usuario_like");
+				
+				if(usuarioLike != -1) {
+					like.setIdUsuario(usuarioLike);
+					v.setLike(like);
+					
+				}
+				lista.add(v);
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
 
 	public ArrayList<Video> getAllByUserName(String nombre) {
 
@@ -207,6 +471,39 @@ public class VideoDAO {
 
 			while (rs.next()) {
 				lista.add(mapper(rs));
+			}
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return lista;
+	}
+	
+	public ArrayList<Video> getAllByUserNameWithLikeUsuario(int idUsuario, String nombre) {
+
+		ArrayList<Video> lista = new ArrayList<Video>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_NAME_WITH_LIKE_USUARIO);) {
+
+			pst.setInt(1, idUsuario);
+			pst.setString(2, "%" + nombre + "%");
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				Video v = new Video();
+				v = mapper(rs);
+				
+				Like like = new Like();
+				int usuarioLike = rs.getInt("usuario_like");
+				
+				if(usuarioLike != -1) {
+					like.setIdUsuario(usuarioLike);
+					v.setLike(like);
+					
+				}
+				lista.add(v);
 			}
 		} catch (Exception e) {
 
@@ -271,32 +568,40 @@ public class VideoDAO {
 		}
 		return video;
 	}
+	
+	public Video getByIdWithLikeUsuario(int idUsuario, int idVideo) {
+		Video v = new Video();
 
-	/*
-	 * 
-	 * public ArrayList<Rol> getByName(String search) {
-	 * 
-	 * ArrayList<Rol> lista = new ArrayList<Rol>(); String sql =
-	 * "SELECT id, nombre FROM rol WHERE nombre LIKE ? ORDER BY id DESC LIMIT 500;";
-	 * 
-	 * try (Connection con = ConnectionManager.getConnection(); PreparedStatement
-	 * pst = con.prepareStatement(sql)) { pst.setString(1, "%" + search + "%"); try
-	 * (ResultSet rs = pst.executeQuery()) { while (rs.next()) {
-	 * lista.add(mapper(rs)); } } } catch (Exception e) { e.printStackTrace(); }
-	 * return lista; }
-	 * 
-	 * @Override public boolean save(Rol pojo) throws SQLException { boolean
-	 * resultado = false;
-	 * 
-	 * if (pojo != null) { // Sanitize nombre
-	 * pojo.setNombre(Utilidades.limpiarEspacios(pojo.getNombre()));
-	 * 
-	 * if (pojo.getId() == -1) { resultado = crear(pojo); } else { resultado =
-	 * modificar(pojo); } }
-	 * 
-	 * return resultado; }
-	 * 
-	 */
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_BY_ID_WITH_LIKE_USUARIO)) {
+
+			// sustituyo la 1º ? por la variable id
+			pst.setInt(1, idUsuario);
+			pst.setInt(2, idVideo);
+
+			try (ResultSet rs = pst.executeQuery()) {
+				if (rs.next()) {
+					
+					v = mapper(rs);
+					
+					Like like = new Like();
+					int usuarioLike = rs.getInt("usuario_like");
+					
+					if(usuarioLike != -1) {
+						like.setIdUsuario(usuarioLike);
+						v.setLike(like);
+						
+					}
+					
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return v;
+	}
+
+
 
 	public boolean modificar(Video pojo, int usuarioId, int categoriaId) throws Exception {
 		boolean resultado = false;
@@ -347,22 +652,6 @@ public class VideoDAO {
 		return resultado;
 	}
 
-	/*
-	 * 
-	 * private boolean doSave(PreparedStatement pst, Rol pojo) throws
-	 * MySQLIntegrityConstraintViolationException, MysqlDataTruncation { boolean
-	 * resultado = false;
-	 * 
-	 * try { int affectedRows = pst.executeUpdate(); if (affectedRows == 1) { try
-	 * (ResultSet generatedKeys = pst.getGeneratedKeys()) { if
-	 * (generatedKeys.next()) { pojo.setId(generatedKeys.getInt(1)); } } resultado =
-	 * true; } } catch (MySQLIntegrityConstraintViolationException e) {
-	 * System.out.println("Rol duplicado"); throw e; } catch (MysqlDataTruncation e)
-	 * { System.out.println("Nombre muy largo"); throw e; } catch (Exception e) {
-	 * e.printStackTrace(); }
-	 * 
-	 * return resultado; }
-	 */
 
 	public boolean delete(int id) { // Mandara el video para obtener el id, y el id de usuario
 		boolean resultado = false;
@@ -405,13 +694,6 @@ public class VideoDAO {
 		return resultado;
 	}
 
-	/**
-	 * Comprueba si el id del video a modificar pertenece al usuario logueado
-	 * 
-	 * @param idVideo
-	 * @param idUsuario
-	 * @return
-	 */
 
 	/**
 	 * Convierte un Resultado de la BD a un POJO
@@ -441,5 +723,7 @@ public class VideoDAO {
 		v.setCategoria(c);
 		return v;
 	}
+
+
 
 }
