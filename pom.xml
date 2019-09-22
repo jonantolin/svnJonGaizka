@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ipartek.formacion</groupId>
-	<artifactId>uf2218_jon_gaizka</artifactId>  
+	<artifactId>uf2218</artifactId>  
 	<packaging>war</packaging>
 	<version>0.0.1</version>
-	<name>uf2219</name>
+	<name>uf2218</name>
 
 
 	<!-- variables comunes para todo el POM -->
@@ -114,6 +114,6 @@
 		</plugins>
 
 
-		<finalName>uf2219</finalName>
+		<finalName>uf2218</finalName>
 	</build>
 </project>
