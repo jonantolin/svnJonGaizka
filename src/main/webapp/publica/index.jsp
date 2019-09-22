@@ -50,7 +50,7 @@
 				</c:if>
 				
 				<c:if test="${busquedaUsuario != null }">
-					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
+					<h3 class="text-primary">Resultado de búsqueda de vídeos de usuario para : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
 					<a href="publica/videos" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 
 				</c:if>

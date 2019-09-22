@@ -48,7 +48,7 @@
 				</c:if>
 				
 				<c:if test="${busquedaUsuario != null }">
-					<h3 class="text-primary">Resultado de búsqueda de vídeo para : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
+					<h3 class="text-primary">Resultado de búsqueda de vídeos de usuario : "<span class="text-success font-italic">${busquedaUsuario}</span>"</h3>
 					<a href="frontoffice/videos?op=<%=VideoController.OP_LISTAR_TODOS_CON_LIKE_USUARIO %>" class="btn btn-outline-primary btn-sm my-1">Volver a Inicio</a>
 
 				</c:if>

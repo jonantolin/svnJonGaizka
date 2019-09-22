@@ -484,7 +484,7 @@ public class VideoDAO {
 		ArrayList<Video> lista = new ArrayList<Video>();
 
 		try (Connection con = ConnectionManager.getConnection();
-				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_NAME_WITH_LIKE_USUARIO);) {
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_USER_NAME_WITH_LIKE_USUARIO);) {
 
 			pst.setInt(1, idUsuario);
 			pst.setString(2, "%" + nombre + "%");
